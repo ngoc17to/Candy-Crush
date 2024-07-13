@@ -1,0 +1,31 @@
+{
+  "preload": {
+    "files": [
+      {
+        "type": "image",
+        "key": "blueItem",
+        "url": "./assets/images/Match_Items/BlueMatchItem.png"
+      },
+      {
+        "type": "image",
+        "key": "greenItem",
+        "url": "./assets/images/Match_Items/GreenMatchItem.png"
+      },
+      {
+        "type": "image",
+        "key": "redItem",
+        "url": "./assets/images/Match_Items/RedMatchItem.png"
+      },
+      {
+        "type": "image",
+        "key": "purpleItem",
+        "url": "./assets/images/Match_Items/PurpleMatchItem.png"
+      },
+      {
+        "type": "image",
+        "key": "yellowItem",
+        "url": "./assets/images/Match_Items/YellowMatchItem.png"
+      }
+    ]
+  }
+}

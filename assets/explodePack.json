@@ -1,0 +1,31 @@
+{
+  "explodeParticle": {
+    "files": [
+      {
+        "type": "image",
+        "key": "blueExplode",
+        "url": "./assets/images/Shattered Block Parts/block_blue_part_01.png"
+      },
+      {
+        "type": "image",
+        "key": "greenExplode",
+        "url": "./assets/images/Shattered Block Parts/block_green_part_01.png"
+      },
+      {
+        "type": "image",
+        "key": "redExplode",
+        "url": "./assets/images/Shattered Block Parts/block_red_part_01.png"
+      },
+      {
+        "type": "image",
+        "key": "purpleExplode",
+        "url": "./assets/images/Shattered Block Parts/block_purple_particle.png"
+      },
+      {
+        "type": "image",
+        "key": "yellowExplode",
+        "url": "./assets/images/Shattered Block Parts/block_yellow_particle.png"
+      }
+    ]
+  }
+}
