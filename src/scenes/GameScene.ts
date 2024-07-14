@@ -1,11 +1,15 @@
 import { calculateOffsets, CONST } from '../const';
 import ExplodeEmitter from '../effect/ExplodeEmitter';
 import BallTile from '../game-objects/BallTile';
+import MilestoneBar from '../game-objects/MilestoneBar';
 import RocketTile from '../game-objects/RocketTile';
 import Tile from '../game-objects/Tile';
+import ScoreManager from '../manager/ScoreManager';
+import DestroyState from '../states/DestroyState';
 import FillState from '../states/FillState';
 import IdleState from '../states/IdleState';
 import PlayState from '../states/PlayState';
+import ShuffleState from '../states/ShuffleState';
 import StateMachine from '../states/StateMachine';
 import SwapState from '../states/SwapState';
 
@@ -13,14 +17,17 @@ class GameScene extends Phaser.Scene {
     // Variables
     private canPick: boolean
     private dragging: boolean
-    private firstSelectedTile: Tile | undefined;
-    private secondSelectedTile: Tile | undefined;
+    public firstSelectedTile: Tile | undefined
+    public secondSelectedTile: Tile | undefined
     public tileGrid: (Tile | undefined)[][]
+    public tiles: Phaser.GameObjects.Group
     private swappingTiles: number
     private removeMap: number[][]
     private particleEmitter: Phaser.GameObjects.Particles.ParticleEmitter
     private selectionTween: Phaser.Tweens.Tween
     public stateMachine: StateMachine
+    private scoreManager: ScoreManager
+    private milestoneBar: MilestoneBar
 
     constructor() {
         super({
@@ -29,11 +36,6 @@ class GameScene extends Phaser.Scene {
     }
 
     create(){
-        this.canPick = true;
-        this.dragging = false;
-        this.firstSelectedTile = undefined;
-        this.secondSelectedTile = undefined;
-
         const screenHeight = this.cameras.main.height
         const screenWidth = this.cameras.main.width
 
@@ -45,24 +47,83 @@ class GameScene extends Phaser.Scene {
         const board = this.add.image(0, 0, 'board')
         board.setScale(0.75)
         board.setPosition(screenWidth / 2, screenHeight *3/5)
+
+        this.canPick = true;
+        this.dragging = false;
+        this.firstSelectedTile = undefined;
+        this.secondSelectedTile = undefined;
+        this.scoreManager = new ScoreManager(this, 1000); // Set initial milestone
+        this.milestoneBar = new MilestoneBar(this, this.scoreManager);
+        this.tiles = this.add.group();
+
  
         calculateOffsets(window.innerWidth, window.innerHeight)
         this.drawField();
-
-        this.input.on("gameobjectdown", this.tileSelect, this);
-        this.input.on("gameobjectmove", this.startSwipe, this);
-        this.input.on("pointerup", this.stopSwipe, this);
         this.stateMachine = new StateMachine('play', {
             play: new PlayState(this),
             idle: new IdleState(this),
+            shuffle: new ShuffleState(this),
             swap: new SwapState(this),
             fill: new FillState(this),
+            destroy: new DestroyState(this),
         })
+        this.input.on("gameobjectdown", this.tileSelect, this);
+        this.input.on("gameobjectdown", ()=>{this.stateMachine.transition('play')}, this);
+        this.input.on("gameobjectmove", this.startSwipe, this);
+        this.input.on("pointerup", this.stopSwipe, this);
+        // this.events.on('milestoneReached', this.handleMilestoneReached, this);
+
     }
 
     update(time: number, delta: number): void {
         this.stateMachine.update(time, delta);
+        this.milestoneBar.updateMilestoneBar();
+
     }
+
+    public handleMilestoneReached(): void {
+        // Chuyển tất cả các tile hiện tại vào một mảng tạm
+        let tiles: Tile[] = [];
+        for (let y = 0; y < CONST.gridHeight; y++) {
+            for (let x = 0; x < CONST.gridWidth; x++) {
+                if (this.tileGrid[y][x]) {
+                    tiles.push(this.tileGrid[y][x] as Tile);
+                }
+            }
+        }
+    
+        Phaser.Utils.Array.Shuffle(tiles);
+    
+        // Gán lại các tile vào lưới theo thứ tự ngẫu nhiên
+        for (let y = 0; y < CONST.gridHeight; y++) {
+            for (let x = 0; x < CONST.gridWidth; x++) {
+                if (tiles.length > 0) {
+                    this.tileGrid[y][x] = tiles.pop();
+                    let posX = x * CONST.tileWidth + CONST.GRID_OFFSET_X;
+                    let posY = y * CONST.tileHeight + CONST.GRID_OFFSET_Y
+                    this.tileGrid[y][x]?.setPosition(posX, posY);
+                }
+            }
+        }
+    
+        // Optionally: Tạo tween để tạo hiệu ứng trộn lại các tile
+        // this.tweens.add({
+        //     targets: this.tileGrid,
+        //     duration: 500,
+        //     ease: 'Power2',
+        //     onComplete: () => {
+        //         console.log('Tiles shuffled');
+        //     }
+        // });
+        this.stateMachine.transition('shuffle');
+        // this.confetti.playConfetti();
+        // this.time.delayedCall(2000, () => {
+        //     this.confetti.stopConfetti();
+        // });
+    
+
+    }
+
     public drawField(): void{
         this.tileGrid = [];
         for(let y = 0; y < CONST.gridHeight; y++){
@@ -72,9 +133,12 @@ class GameScene extends Phaser.Scene {
                 let posY = y * CONST.tileHeight + CONST.GRID_OFFSET_Y
                 let tile: Tile;
                 do {
-                    // Destroy the previous tile if it exists and matches
-                    if (this.tileGrid[y][x]) {
-                        this.tileGrid[y][x]!.destroyTile();
+                    if(this.tiles.getLength() > 0){
+                            
+                        // Destroy the previous tile if it exists and matches
+                        if (this.tileGrid[y][x]) {
+                            this.tileGrid[y][x]!.destroyTile();
+                        }
                     }
     
                     // Get a random tile
@@ -82,6 +146,7 @@ class GameScene extends Phaser.Scene {
     
                     tile = new Tile(this, posX, posY, randomTileType);
                     this.tileGrid[y][x] = tile;
+                    this.tiles.add(tile)
                 } while (this.isMatch(y, x));
             }
         }
@@ -199,12 +264,11 @@ class GameScene extends Phaser.Scene {
     }
 
     public getTilePos(tileGrid: (Tile | undefined)[][], tile: Tile | undefined): {x: number, y: number} {
+       // return position of tile in tileGrid (row, column), if tile is undefined return {-1,-1}
         let pos = { x: -1, y: -1 };
 
-        //Find the position of a specific tile in the grid
         for (let y = 0; y < tileGrid.length; y++) {
             for (let x = 0; x < tileGrid[y].length; x++) {
-                //There is a match at this position so return the grid coords
                 if (tile === tileGrid[y][x]) {
                     pos.x = x;
                     pos.y = y;
@@ -246,24 +310,23 @@ class GameScene extends Phaser.Scene {
             onComplete: () => {
                 this.swappingTiles--;
                 if(this.swappingTiles == 0){
-                    if(this.firstSelectedTile instanceof RocketTile || 
-                        this.secondSelectedTile instanceof RocketTile)
-                    {
-                        if(this.firstSelectedTile instanceof RocketTile){
-                            (this.firstSelectedTile as RocketTile).destroyTile();
-                            this.firstSelectedTile = undefined
+                    // if(this.firstSelectedTile instanceof RocketTile || 
+                    //     this.secondSelectedTile instanceof RocketTile)
+                    // {
+                    //     if(this.firstSelectedTile instanceof RocketTile){
+                    //         (this.firstSelectedTile as RocketTile).destroyTile();
+                    //         this.firstSelectedTile = undefined
 
-                        }
-                        if(this.secondSelectedTile instanceof RocketTile){
-                            (this.secondSelectedTile as RocketTile).destroyTile();
-                            this.secondSelectedTile = undefined
-                        }
+                    //     }
+                    //     if(this.secondSelectedTile instanceof RocketTile){
+                    //         (this.secondSelectedTile as RocketTile).destroyTile();
+                    //         this.secondSelectedTile = undefined
+                    //     }
 
-                    }
-                    else{
+                    // }
+                    // else{
                         if(!this.matchInBoard() && swapBack){
                             // this.stateMachine.transition('swap', tile1, tile2, false)
-
                             this.swapTiles(tile1, tile2, false);
                         }
                         else{
@@ -273,15 +336,19 @@ class GameScene extends Phaser.Scene {
                             else{
                                 this.canPick = true;
                                 this.firstSelectedTile = undefined;
-                                this.stateMachine.transition('play')
+                                this.secondSelectedTile = undefined;
                             }
                         }
-                    }
+                    // }
                 }
             }
         });
     }
     public matchInBoard(){
+        if(this.firstSelectedTile instanceof RocketTile || 
+            this.secondSelectedTile instanceof RocketTile
+        ) return true;
+
         for(let y = 0; y < CONST.gridHeight; y++){
             for(let x = 0; x < CONST.gridWidth; x ++){
                 if(this.isMatch(y, x)){
@@ -299,11 +366,37 @@ class GameScene extends Phaser.Scene {
                 this.removeMap[y].push(0);
             }
         }
-        this.markMatches('HORIZONTAL');
-        this.markMatches('VERTICAL');
-        this.destroyTiles();
+        console.log("handleMatches")
+        if(this.firstSelectedTile instanceof RocketTile || 
+            this.secondSelectedTile instanceof RocketTile)
+        {
+            if(this.firstSelectedTile instanceof RocketTile)
+            {
+                const pos = this.getTilePos(this.tileGrid, this.firstSelectedTile)
+                this.removeMap[pos.y][pos.x]++;
+            }
+            if(this.secondSelectedTile instanceof RocketTile)
+            {
+                const pos = this.getTilePos(this.tileGrid, this.secondSelectedTile)
+                this.removeMap[pos.y][pos.x]++;
+            }
+        }
+        else{
+                
+            this.markMatches('HORIZONTAL');
+            this.markMatches('VERTICAL');
+        }
+        // this.destroyTiles();
+        this.stateMachine.transition('destroy');
     }
     public markMatches(direction: 'HORIZONTAL' | 'VERTICAL') {
+        // hàm này chỉ gọi khi đã kiểm tra match in board
+        // ( hàm match in board trả về true nếu có 1 trong 2 selectedTile là rocket )
+        // nên trong hàm này chỉ cần xét selectedTile có phải rocket ko
+        // nếu đúng là rocket thì rocket này sẽ được thêm vào remove map để destroyed
+        // nếu ko phải rocket thì chỉ cần kiểm tra như bình thường
+        // trong destroy state chỉ cần kiếm trong remove map để gọi destroy
+
         if(direction === 'HORIZONTAL'){
             for(let y = 0; y < CONST.gridHeight; y++){
                 let colorStreak = 1;
@@ -348,6 +441,8 @@ class GameScene extends Phaser.Scene {
                 }
             }
         }
+
+
     }
     
     public specialTileAppearancePosition(start: number, end: number, fixed: number, streak: number, direction: 'HORIZONTAL' | 'VERTICAL'): { row: number, col: number } {
@@ -393,6 +488,7 @@ class GameScene extends Phaser.Scene {
             const posX = col * CONST.tileWidth + CONST.GRID_OFFSET_X;
             const posY = row * CONST.tileHeight + CONST.GRID_OFFSET_Y;
 
+            //trường hợp này destroy khác mấy cái bình thường nên tạm để destroy riêng
             // Di chuyển các tile còn lại về phía special tile
             let destroy = streak - 1
             for (let i = 0; i < streak; i++) {
@@ -450,34 +546,27 @@ class GameScene extends Phaser.Scene {
         }
     }
 
-    public destroyTiles(){
-        let destroyed = 0;
+    public destroyTiles(): void {
+        this.firstSelectedTile = undefined;
+        this.secondSelectedTile = undefined;
+        let isDestroyRocket = false;
         for(let y = 0; y < CONST.gridHeight; y ++){
             for(let x = 0; x < CONST.gridWidth; x ++){
                 if(this.removeMap[y][x] > 0){
-                    destroyed ++;
-                    this.tweens.add({
-                        targets: this.tileGrid[y][x],
-                        alpha: 0.5,
-                        duration: CONST.destroySpeed,
-                        callbackScope: this,
-                        onComplete: () => {
-                            destroyed --;
-                            if(destroyed == 0){
-                                this.stateMachine.transition('fill')
-                                // this.makeTilesFall();
-                                // this.replenishField();
-                            }
-                        }
-                    });
-                    this.tileGrid[y][x]?.destroyTween()
-                    this.tileGrid[y][x]?.destroyTile()
+                    const destroyTile = this.tileGrid[y][x]
+                    if(destroyTile instanceof RocketTile) isDestroyRocket=true
+                    this.scoreManager.addScore(100);
+                    destroyTile?.destroyTile();
                     this.tileGrid[y][x] = undefined
                 }
             }
         }
+        if(!isDestroyRocket) this.stateMachine.transition('fill')
+
     }
+
     public makeTilesFall(){
+        console.log("makeTilesFall")
         //xét từ dưới lên trên từ trái qua phải
         for(let y = CONST.gridHeight - 2; y >= 0; y--){
             for(let x = 0; x < CONST.gridWidth; x++){
@@ -517,6 +606,7 @@ class GameScene extends Phaser.Scene {
     }
     public replenishField(): Promise<void> {
         return new Promise((resolve) => {
+            console.log("replenishField")
             let replenished = 0;
             for(let x = 0; x < CONST.gridWidth; x ++){
                 let emptySpots = this.holesInCol(x);
@@ -553,6 +643,7 @@ class GameScene extends Phaser.Scene {
                                     else{
                                         this.canPick = true;
                                         this.firstSelectedTile = undefined;
+                                        this.secondSelectedTile = undefined;
                                     }
                                 }
                             }

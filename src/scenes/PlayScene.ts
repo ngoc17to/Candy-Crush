@@ -1,368 +1,368 @@
-import { calculateOffsets, CONST } from '../const';
-import Tile from '../game-objects/Tile';
+// import { calculateOffsets, CONST } from '../const';
+// import Tile from '../game-objects/Tile';
 
-class PlayScene extends Phaser.Scene {
-    // Variables
-    private canMove: boolean;
+// class PlayScene extends Phaser.Scene {
+//     // Variables
+//     private canMove: boolean;
 
-    // Grid with tiles
-    private tileGrid: (Tile | undefined)[][];
+//     // Grid with tiles
+//     private tileGrid: (Tile | undefined)[][];
 
-    // Selected Tiles
-    private firstSelectedTile: Tile | undefined;
-    private secondSelectedTile: Tile | undefined;
+//     // Selected Tiles
+//     private firstSelectedTile: Tile | undefined;
+//     private secondSelectedTile: Tile | undefined;
 
-    constructor() {
-        super({
-            key: 'PlayScene'
-        })
-    }
+//     constructor() {
+//         super({
+//             key: 'PlayScene'
+//         })
+//     }
 
-    init(): void {
-        // Init variables
-        this.canMove = true
+//     init(): void {
+//         // Init variables
+//         this.canMove = true
 
-        const screenHeight = this.cameras.main.height
-        const screenWidth = this.cameras.main.width
+//         const screenHeight = this.cameras.main.height
+//         const screenWidth = this.cameras.main.width
 
-        const background = this.add.image(0, 0, 'background')
-        const scale = screenHeight / background.height
-        background.setScale(0.5, scale)
-        background.setPosition(screenWidth / 2, screenHeight / 2)
+//         const background = this.add.image(0, 0, 'background')
+//         const scale = screenHeight / background.height
+//         background.setScale(0.5, scale)
+//         background.setPosition(screenWidth / 2, screenHeight / 2)
 
-        const board = this.add.image(0, 0, 'board')
-        board.setScale(0.75)
-        board.setPosition(screenWidth / 2, screenHeight *3/5)
+//         const board = this.add.image(0, 0, 'board')
+//         board.setScale(0.75)
+//         board.setPosition(screenWidth / 2, screenHeight *3/5)
 
-        calculateOffsets(window.innerWidth, window.innerHeight)
+//         calculateOffsets(window.innerWidth, window.innerHeight)
         
-        // Init grid with tiles
-        this.tileGrid = [];
-        for (let y = 0; y < CONST.gridHeight; y++) {
-            this.tileGrid[y] = [];
-            for (let x = 0; x < CONST.gridWidth; x++) {
-                this.tileGrid[y][x] = this.addTile(x, y);
-            }
-        }
+//         // Init grid with tiles
+//         this.tileGrid = [];
+//         for (let y = 0; y < CONST.gridHeight; y++) {
+//             this.tileGrid[y] = [];
+//             for (let x = 0; x < CONST.gridWidth; x++) {
+//                 this.tileGrid[y][x] = this.addTile(x, y);
+//             }
+//         }
 
-        // Selected Tiles
-        this.firstSelectedTile = undefined;
-        this.secondSelectedTile = undefined;
+//         // Selected Tiles
+//         this.firstSelectedTile = undefined;
+//         this.secondSelectedTile = undefined;
 
-        // Input
-        this.input.on('gameobjectdown', this.tileDown, this);
+//         // Input
+//         this.input.on('gameobjectdown', this.tileDown, this);
 
-        // Check if matches on the start
-        this.checkMatches();
-    }
+//         // Check if matches on the start
+//         this.checkMatches();
+//     }
 
-    /**
-     * Add a new random tile at the specified position.
-     * @param x
-     * @param y
-     */
-    private addTile(x: number, y: number): Tile {
-        // Get a random tile
-        let randomTileType: string =
-        CONST.candyTypes[Phaser.Math.RND.between(0, CONST.candyTypes.length - 1)];
+//     /**
+//      * Add a new random tile at the specified position.
+//      * @param x
+//      * @param y
+//      */
+//     private addTile(x: number, y: number): Tile {
+//         // Get a random tile
+//         let randomTileType: string =
+//         CONST.candyTypes[Phaser.Math.RND.between(0, CONST.candyTypes.length - 1)];
 
-        // let posX = x * CONST.tileWidth + CONST.GRID_OFFSET_X;
-        // let posY = y * CONST.tileHeight + CONST.GRID_OFFSET_Y;
-        let posX = x * CONST.tileWidth
-        let posY = y * CONST.tileHeight
-        // Return the created tile
-        return new Tile(this, posX, posY, randomTileType);
-    }
+//         // let posX = x * CONST.tileWidth + CONST.GRID_OFFSET_X;
+//         // let posY = y * CONST.tileHeight + CONST.GRID_OFFSET_Y;
+//         let posX = x * CONST.tileWidth
+//         let posY = y * CONST.tileHeight
+//         // Return the created tile
+//         return new Tile(this, posX, posY, randomTileType);
+//     }
 
-    /**
-     * This function gets called, as soon as a tile has been pressed or clicked.
-     * It will check, if a move can be done at first.
-     * Then it will check if a tile was already selected before or not (if -> else)
-     * @param pointer
-     * @param gameobject
-     * @param event
-     */
-    private tileDown(pointer: any, gameobject: any, event: any): void {
-        if (this.canMove) {
-        if (!this.firstSelectedTile) {
-            this.firstSelectedTile = gameobject;
-        } else {
-            // So if we are here, we must have selected a second tile
-            this.secondSelectedTile = gameobject;
-            let dx, dy
-            if (this.secondSelectedTile !== undefined) {
-                dx = Math.abs(this.firstSelectedTile.x - this.secondSelectedTile.x) / CONST.tileWidth;
-                dy = Math.abs(this.firstSelectedTile.y - this.secondSelectedTile.y) / CONST.tileHeight;
-            }
+//     /**
+//      * This function gets called, as soon as a tile has been pressed or clicked.
+//      * It will check, if a move can be done at first.
+//      * Then it will check if a tile was already selected before or not (if -> else)
+//      * @param pointer
+//      * @param gameobject
+//      * @param event
+//      */
+//     private tileDown(pointer: any, gameobject: any, event: any): void {
+//         if (this.canMove) {
+//         if (!this.firstSelectedTile) {
+//             this.firstSelectedTile = gameobject;
+//         } else {
+//             // So if we are here, we must have selected a second tile
+//             this.secondSelectedTile = gameobject;
+//             let dx, dy
+//             if (this.secondSelectedTile !== undefined) {
+//                 dx = Math.abs(this.firstSelectedTile.x - this.secondSelectedTile.x) / CONST.tileWidth;
+//                 dy = Math.abs(this.firstSelectedTile.y - this.secondSelectedTile.y) / CONST.tileHeight;
+//             }
 
-            // Check if the selected tiles are both in range to make a move
-            if ((dx === 1 && dy === 0) || (dx === 0 && dy === 1)) {
-            this.canMove = false;
-            this.swapTiles();
-            }
-        }
-        }
-    }
+//             // Check if the selected tiles are both in range to make a move
+//             if ((dx === 1 && dy === 0) || (dx === 0 && dy === 1)) {
+//             this.canMove = false;
+//             this.swapTiles();
+//             }
+//         }
+//         }
+//     }
 
-    /**
-     * This function will take care of the swapping of the two selected tiles.
-     * It will only work, if two tiles have been selected.
-     */
-    private swapTiles(): void {
-        if (this.firstSelectedTile && this.secondSelectedTile) {
-        // Get the position of the two tiles
-        let firstTilePosition = {
-            x: this.firstSelectedTile.x,
-            y: this.firstSelectedTile.y
-        };
+//     /**
+//      * This function will take care of the swapping of the two selected tiles.
+//      * It will only work, if two tiles have been selected.
+//      */
+//     private swapTiles(): void {
+//         if (this.firstSelectedTile && this.secondSelectedTile) {
+//         // Get the position of the two tiles
+//         let firstTilePosition = {
+//             x: this.firstSelectedTile.x,
+//             y: this.firstSelectedTile.y
+//         };
 
-        let secondTilePosition = {
-            x: this.secondSelectedTile.x,
-            y: this.secondSelectedTile.y
-        };
+//         let secondTilePosition = {
+//             x: this.secondSelectedTile.x,
+//             y: this.secondSelectedTile.y
+//         };
 
-        // Swap them in our grid with the tiles
-        this.tileGrid[firstTilePosition.y / CONST.tileHeight][
-            firstTilePosition.x / CONST.tileWidth
-        ] = this.secondSelectedTile;
-        this.tileGrid[secondTilePosition.y / CONST.tileHeight][
-            secondTilePosition.x / CONST.tileWidth
-        ] = this.firstSelectedTile;
+//         // Swap them in our grid with the tiles
+//         this.tileGrid[firstTilePosition.y / CONST.tileHeight][
+//             firstTilePosition.x / CONST.tileWidth
+//         ] = this.secondSelectedTile;
+//         this.tileGrid[secondTilePosition.y / CONST.tileHeight][
+//             secondTilePosition.x / CONST.tileWidth
+//         ] = this.firstSelectedTile;
 
-        // Move them on the screen with tweens
-        this.add.tween({
-            targets: this.firstSelectedTile,
-            x: this.secondSelectedTile.x,
-            y: this.secondSelectedTile.y,
-            ease: 'Linear',
-            duration: 400,
-            repeat: 0,
-            yoyo: false
-        });
+//         // Move them on the screen with tweens
+//         this.add.tween({
+//             targets: this.firstSelectedTile,
+//             x: this.secondSelectedTile.x,
+//             y: this.secondSelectedTile.y,
+//             ease: 'Linear',
+//             duration: 400,
+//             repeat: 0,
+//             yoyo: false
+//         });
 
-        this.add.tween({
-            targets: this.secondSelectedTile,
-            x: this.firstSelectedTile.x,
-            y: this.firstSelectedTile.y,
-            ease: 'Linear',
-            duration: 400,
-            repeat: 0,
-            yoyo: false,
-            onComplete: () => {
-            this.checkMatches();
-            }
-        });
+//         this.add.tween({
+//             targets: this.secondSelectedTile,
+//             x: this.firstSelectedTile.x,
+//             y: this.firstSelectedTile.y,
+//             ease: 'Linear',
+//             duration: 400,
+//             repeat: 0,
+//             yoyo: false,
+//             onComplete: () => {
+//             this.checkMatches();
+//             }
+//         });
 
-        this.firstSelectedTile =
-            this.tileGrid[firstTilePosition.y / CONST.tileHeight][
-            firstTilePosition.x / CONST.tileWidth
-            ];
-        this.secondSelectedTile =
-            this.tileGrid[secondTilePosition.y / CONST.tileHeight][
-            secondTilePosition.x / CONST.tileWidth
-            ];
-        }
-    }
+//         this.firstSelectedTile =
+//             this.tileGrid[firstTilePosition.y / CONST.tileHeight][
+//             firstTilePosition.x / CONST.tileWidth
+//             ];
+//         this.secondSelectedTile =
+//             this.tileGrid[secondTilePosition.y / CONST.tileHeight][
+//             secondTilePosition.x / CONST.tileWidth
+//             ];
+//         }
+//     }
 
-    private checkMatches(): void {
-        //Call the getMatches function to check for spots where there is
-        //a run of three or more tiles in a row
-        let matches = this.getMatches(this.tileGrid);
+//     private checkMatches(): void {
+//         //Call the getMatches function to check for spots where there is
+//         //a run of three or more tiles in a row
+//         let matches = this.getMatches(this.tileGrid);
 
-        //If there are matches, remove them
-        if (matches.length > 0) {
-            //Remove the tiles
-            this.removeTileGroup(matches);
-            // Move the tiles currently on the board into their new positions
-            this.resetTile();
-            //Fill the board with new tiles wherever there is an empty spot
-            // this.fillTile();
-            this.tileUp();
-            this.checkMatches();
-        } else {
-            // No match so just swap the tiles back to their original position and reset
-            this.swapTiles();
-            this.tileUp();
-            this.canMove = true;
-        }
-    }
+//         //If there are matches, remove them
+//         if (matches.length > 0) {
+//             //Remove the tiles
+//             this.removeTileGroup(matches);
+//             // Move the tiles currently on the board into their new positions
+//             this.resetTile();
+//             //Fill the board with new tiles wherever there is an empty spot
+//             // this.fillTile();
+//             this.tileUp();
+//             this.checkMatches();
+//         } else {
+//             // No match so just swap the tiles back to their original position and reset
+//             this.swapTiles();
+//             this.tileUp();
+//             this.canMove = true;
+//         }
+//     }
 
-    private resetTile(): void {
-        // Duyệt qua từng cột từ trái qua phải
-        for (let x = 0; x < this.tileGrid[0].length; x++) {
-            //  Duyệt qua từng ô trong mỗi cột từ dưới lên trên (trừ cột trên cùng)
-            for (let y = this.tileGrid.length - 1; y > 0; y--) {
-                // If this space is blank, but the one above it is not, move the one above down
-                if (
-                    this.tileGrid[y][x] === undefined &&
-                    this.tileGrid[y-1][x] !== undefined
-                ) {
-                    // Move the tile above down one
-                    let tempTile = this.tileGrid[y-1][x];
-                    this.tileGrid[y][x] = tempTile;
-                    this.tileGrid[y-1][x] = undefined;
+//     private resetTile(): void {
+//         // Duyệt qua từng cột từ trái qua phải
+//         for (let x = 0; x < this.tileGrid[0].length; x++) {
+//             //  Duyệt qua từng ô trong mỗi cột từ dưới lên trên (trừ cột trên cùng)
+//             for (let y = this.tileGrid.length - 1; y > 0; y--) {
+//                 // If this space is blank, but the one above it is not, move the one above down
+//                 if (
+//                     this.tileGrid[y][x] === undefined &&
+//                     this.tileGrid[y-1][x] !== undefined
+//                 ) {
+//                     // Move the tile above down one
+//                     let tempTile = this.tileGrid[y-1][x];
+//                     this.tileGrid[y][x] = tempTile;
+//                     this.tileGrid[y-1][x] = undefined;
 
-                    this.add.tween({
-                        targets: tempTile,
-                        y: CONST.tileHeight * y,
-                        ease: 'Linear',
-                        duration: 5000,
-                        repeat: 0,
-                        yoyo: false
-                    });
+//                     this.add.tween({
+//                         targets: tempTile,
+//                         y: CONST.tileHeight * y,
+//                         ease: 'Linear',
+//                         duration: 5000,
+//                         repeat: 0,
+//                         yoyo: false
+//                     });
 
-                    //The positions have changed so start this process again from the bottom
-                    //NOTE: This is not set to me.tileGrid[i].length - 1 because it will immediately be decremented as
-                    //we are at the end of the loop.
-                    y = this.tileGrid.length;
+//                     //The positions have changed so start this process again from the bottom
+//                     //NOTE: This is not set to me.tileGrid[i].length - 1 because it will immediately be decremented as
+//                     //we are at the end of the loop.
+//                     y = this.tileGrid.length;
 
-                }
-                // xét cột trên cùng để fill
-                if(this.tileGrid[0][x] === undefined){
-                    this.tileGrid[0][x] = this.addTile(x, 0);
-                    y = this.tileGrid.length;
-                }
-            }
-        }
-    }
+//                 }
+//                 // xét cột trên cùng để fill
+//                 if(this.tileGrid[0][x] === undefined){
+//                     this.tileGrid[0][x] = this.addTile(x, 0);
+//                     y = this.tileGrid.length;
+//                 }
+//             }
+//         }
+//     }
 
-    private fillTile(): void {
-        //Check for blank spaces in the grid and add new tiles at that position
-        for (var y = 0; y < this.tileGrid.length; y++) {
-            for (var x = 0; x < this.tileGrid[y].length; x++) {
-                if (this.tileGrid[y][x] === undefined) {
-                    //Found a blank spot so lets add animate a tile there
-                    let tile = this.addTile(x, y);
+//     private fillTile(): void {
+//         //Check for blank spaces in the grid and add new tiles at that position
+//         for (var y = 0; y < this.tileGrid.length; y++) {
+//             for (var x = 0; x < this.tileGrid[y].length; x++) {
+//                 if (this.tileGrid[y][x] === undefined) {
+//                     //Found a blank spot so lets add animate a tile there
+//                     let tile = this.addTile(x, y);
 
-                    //And also update our "theoretical" grid
-                    this.tileGrid[y][x] = tile;
-                }
-            }
-        }
-    }
+//                     //And also update our "theoretical" grid
+//                     this.tileGrid[y][x] = tile;
+//                 }
+//             }
+//         }
+//     }
 
-    private tileUp(): void {
-        // Reset active tiles
-        this.firstSelectedTile = undefined;
-        this.secondSelectedTile = undefined;
-    }
+//     private tileUp(): void {
+//         // Reset active tiles
+//         this.firstSelectedTile = undefined;
+//         this.secondSelectedTile = undefined;
+//     }
 
-    private removeTileGroup(matches: any): void {
-        // Loop through all the matches and remove the associated tiles
-        for (var i = 0; i < matches.length; i++) {
-            var tempArr = matches[i];
+//     private removeTileGroup(matches: any): void {
+//         // Loop through all the matches and remove the associated tiles
+//         for (var i = 0; i < matches.length; i++) {
+//             var tempArr = matches[i];
 
-            for (var j = 0; j < tempArr.length; j++) {
-                let tile = tempArr[j];
-                //Find where this tile lives in the theoretical grid
-                let tilePos = this.getTilePos(this.tileGrid, tile);
+//             for (var j = 0; j < tempArr.length; j++) {
+//                 let tile = tempArr[j];
+//                 //Find where this tile lives in the theoretical grid
+//                 let tilePos = this.getTilePos(this.tileGrid, tile);
 
-                // Remove the tile from the theoretical grid
-                if (tilePos.x !== -1 && tilePos.y !== -1) {
-                    tile.destroy();
-                    this.tileGrid[tilePos.y][tilePos.x] = undefined;
-                }
-            }
-        }
-    }
+//                 // Remove the tile from the theoretical grid
+//                 if (tilePos.x !== -1 && tilePos.y !== -1) {
+//                     tile.destroy();
+//                     this.tileGrid[tilePos.y][tilePos.x] = undefined;
+//                 }
+//             }
+//         }
+//     }
 
-    private getTilePos(tileGrid: (Tile | undefined)[][], tile: Tile | undefined): {x: number, y: number} {
-        let pos = { x: -1, y: -1 };
+//     private getTilePos(tileGrid: (Tile | undefined)[][], tile: Tile | undefined): {x: number, y: number} {
+//         let pos = { x: -1, y: -1 };
 
-        //Find the position of a specific tile in the grid
-        for (let y = 0; y < tileGrid.length; y++) {
-            for (let x = 0; x < tileGrid[y].length; x++) {
-                //There is a match at this position so return the grid coords
-                if (tile === tileGrid[y][x]) {
-                    pos.x = x;
-                    pos.y = y;
-                    break;
-                }
-            }
-        }
+//         //Find the position of a specific tile in the grid
+//         for (let y = 0; y < tileGrid.length; y++) {
+//             for (let x = 0; x < tileGrid[y].length; x++) {
+//                 //There is a match at this position so return the grid coords
+//                 if (tile === tileGrid[y][x]) {
+//                     pos.x = x;
+//                     pos.y = y;
+//                     break;
+//                 }
+//             }
+//         }
 
-        return pos;
-    }
+//         return pos;
+//     }
 
-    private getMatches(tileGrid: (Tile | undefined)[][]): (Tile | undefined)[][] {
-        let matches: Tile[][] = [];
-        let groups: Tile[] = [];
+//     private getMatches(tileGrid: (Tile | undefined)[][]): (Tile | undefined)[][] {
+//         let matches: Tile[][] = [];
+//         let groups: Tile[] = [];
 
-        // Check for horizontal matches
-        // tileGrid.length = số row
-        for (let y = 0; y < tileGrid.length; y++) {
-            let tempArray = tileGrid[y]; // Lấy hàng thứ y từ tileGrid
-            groups = [];
-            for (let x = 0; x < tempArray.length; x++) { //tempArray là row y nên tempArray.length là số col
-                if (x < tempArray.length - 2) {
-                    if (tileGrid[y][x] && tileGrid[y][x + 1] && tileGrid[y][x + 2]) {
-                        if (
-                            tileGrid[y][x]?.texture.key === tileGrid[y][x + 1]?.texture.key &&
-                            tileGrid[y][x + 1]?.texture.key === tileGrid[y][x + 2]?.texture.key
-                        ) {
-                            if (groups.length > 0) {
-                                if (groups.indexOf(tileGrid[y][x]!) == -1) {
-                                    matches.push(groups);
-                                    groups = [];
-                                }
-                            }
+//         // Check for horizontal matches
+//         // tileGrid.length = số row
+//         for (let y = 0; y < tileGrid.length; y++) {
+//             let tempArray = tileGrid[y]; // Lấy hàng thứ y từ tileGrid
+//             groups = [];
+//             for (let x = 0; x < tempArray.length; x++) { //tempArray là row y nên tempArray.length là số col
+//                 if (x < tempArray.length - 2) {
+//                     if (tileGrid[y][x] && tileGrid[y][x + 1] && tileGrid[y][x + 2]) {
+//                         if (
+//                             tileGrid[y][x]?.texture.key === tileGrid[y][x + 1]?.texture.key &&
+//                             tileGrid[y][x + 1]?.texture.key === tileGrid[y][x + 2]?.texture.key
+//                         ) {
+//                             if (groups.length > 0) {
+//                                 if (groups.indexOf(tileGrid[y][x]!) == -1) {
+//                                     matches.push(groups);
+//                                     groups = [];
+//                                 }
+//                             }
 
-                            if (groups.indexOf(tileGrid[y][x]!) == -1) {
-                                groups.push(tileGrid[y][x]!);
-                            }
+//                             if (groups.indexOf(tileGrid[y][x]!) == -1) {
+//                                 groups.push(tileGrid[y][x]!);
+//                             }
 
-                            if (groups.indexOf(tileGrid[y][x + 1]!) == -1) {
-                                groups.push(tileGrid[y][x + 1]!);
-                            }
+//                             if (groups.indexOf(tileGrid[y][x + 1]!) == -1) {
+//                                 groups.push(tileGrid[y][x + 1]!);
+//                             }
 
-                            if (groups.indexOf(tileGrid[y][x + 2]!) == -1) {
-                                groups.push(tileGrid[y][x + 2]!);
-                            }
-                        }
-                    }
-                }
-            }
+//                             if (groups.indexOf(tileGrid[y][x + 2]!) == -1) {
+//                                 groups.push(tileGrid[y][x + 2]!);
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
 
-            if (groups.length > 0) {
-                matches.push(groups);
-            }
-        }
+//             if (groups.length > 0) {
+//                 matches.push(groups);
+//             }
+//         }
 
-        //Check for vertical matches
-        for (let j = 0; j < tileGrid.length; j++) {
-            var tempArr = tileGrid[j];
-            groups = [];
-            for (let i = 0; i < tempArr.length; i++) {
-                if (i < tempArr.length - 2)
-                    if (tileGrid[i][j] && tileGrid[i + 1][j] && tileGrid[i + 2][j]) {
-                        if (
-                        tileGrid[i][j]?.texture.key === tileGrid[i + 1][j]?.texture.key &&
-                        tileGrid[i + 1][j]?.texture.key === tileGrid[i + 2][j]?.texture.key
-                        ) {
-                            if (groups.length > 0) {
-                                if (groups.indexOf(tileGrid[i][j]!) == -1) {
-                                matches.push(groups);
-                                groups = [];
-                                }
-                            }
+//         //Check for vertical matches
+//         for (let j = 0; j < tileGrid.length; j++) {
+//             var tempArr = tileGrid[j];
+//             groups = [];
+//             for (let i = 0; i < tempArr.length; i++) {
+//                 if (i < tempArr.length - 2)
+//                     if (tileGrid[i][j] && tileGrid[i + 1][j] && tileGrid[i + 2][j]) {
+//                         if (
+//                         tileGrid[i][j]?.texture.key === tileGrid[i + 1][j]?.texture.key &&
+//                         tileGrid[i + 1][j]?.texture.key === tileGrid[i + 2][j]?.texture.key
+//                         ) {
+//                             if (groups.length > 0) {
+//                                 if (groups.indexOf(tileGrid[i][j]!) == -1) {
+//                                 matches.push(groups);
+//                                 groups = [];
+//                                 }
+//                             }
 
-                            if (groups.indexOf(tileGrid[i][j]!) == -1) {
-                                groups.push(tileGrid[i][j]!);
-                            }
-                            if (groups.indexOf(tileGrid[i + 1][j]!) == -1) {
-                                groups.push(tileGrid[i + 1][j]!);
-                            }
-                            if (groups.indexOf(tileGrid[i + 2][j]!) == -1) {
-                                groups.push(tileGrid[i + 2][j]!);
-                            }
-                        }
-                    }
-            }
-            if (groups.length > 0) matches.push(groups);
-        }
-        console.log(matches);
-        return matches;
-    }
-}
+//                             if (groups.indexOf(tileGrid[i][j]!) == -1) {
+//                                 groups.push(tileGrid[i][j]!);
+//                             }
+//                             if (groups.indexOf(tileGrid[i + 1][j]!) == -1) {
+//                                 groups.push(tileGrid[i + 1][j]!);
+//                             }
+//                             if (groups.indexOf(tileGrid[i + 2][j]!) == -1) {
+//                                 groups.push(tileGrid[i + 2][j]!);
+//                             }
+//                         }
+//                     }
+//             }
+//             if (groups.length > 0) matches.push(groups);
+//         }
+//         console.log(matches);
+//         return matches;
+//     }
+// }
 
-export default PlayScene
+// export default PlayScene

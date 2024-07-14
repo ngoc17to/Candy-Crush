@@ -4,10 +4,12 @@ import GameScene from "../scenes/GameScene"
 
 class Tile extends Phaser.GameObjects.Sprite {
     private explodeEmitter: ExplodeEmitter
+    protected currentScene: GameScene
 
-    constructor(scene: Phaser.Scene, x: number, y: number, texture: string) {
+    constructor(scene: GameScene, x: number, y: number, texture: string) {
         super(scene, x, y, texture)
         this.explodeEmitter = new ExplodeEmitter(scene)
+        this.currentScene = scene
 
         this.setOrigin(0, 0)
         this.setInteractive()
@@ -17,13 +19,15 @@ class Tile extends Phaser.GameObjects.Sprite {
         this.scene.add.existing(this)
     }
     public destroyTile(): void {
+        console.log("destroyTile")
+        this.destroyTween()
         this.destroy()
     }
     public destroyTween(): void {
-        const gameScene = this.scene as GameScene; // Cast to GameScene if necessary
-        console.log(gameScene)
+        const gameScene = this.scene as GameScene;
+        // console.log(gameScene)
         const {x,y} = gameScene.getTilePos(gameScene.tileGrid, this)
-        console.log(x,y)
+        // console.log(x,y)
 
         gameScene.add.particles(0, 0, 'particle', {
             x: gameScene.tileGrid[y][x]!.x + CONST.tileWidth / 2,

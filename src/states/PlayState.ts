@@ -10,13 +10,12 @@ class PlayState extends State{
         super()
         this.scene = scene
         this.elapsedTime = 0
-        this.scene.input.on("gameobjectdown", () => {
-            this.elapsedTime = 0;
-        });
+
     }
 
     enter(): void {
         console.log("PlayState")
+        this.elapsedTime = 0
     }
     exit(): void {
         this.elapsedTime = 0

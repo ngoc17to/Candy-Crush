@@ -1,5 +1,5 @@
 import { BootScene } from "./scenes/BootScene";
-import GameScene from "./scenes/PlayScene";
+import GameScene from "./scenes/GameScene";
 
 
 export const GameConfig: Phaser.Types.Core.GameConfig = {
