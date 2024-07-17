@@ -21,7 +21,7 @@ class StateMachine {
         // On the first step, the state is null and we need to initialize the first state.
         if (this.state === null) {
             this.state = this.initialState;
-            this.possibleStates[this.state].enter(...this.stateArgs);
+            this.possibleStates[this.state].enter();
         }
         // Run the current state's execute
         this.possibleStates[this.state].execute(time, delta);
@@ -32,7 +32,7 @@ class StateMachine {
             this.possibleStates[this.state].exit()
         }
         this.state = newState;
-        this.possibleStates[this.state].enter(...enterArgs);
+        this.possibleStates[this.state].enter();
     }
 
     public getState(): string | null {

@@ -7,7 +7,7 @@ export let CONST = {
     tileWidth: 48,
     tileHeight: 48,
     swapSpeed: 200,
-    destroySpeed: 200,
+    destroySpeed: 100,
     fallSpeed: 200,
     TRANSITION_DELAY: 5000,
     candyTypes: [

@@ -13,16 +13,15 @@ class FillState extends State{
         this.elapsedTime = 0
     }
 
-    enter(): void {
-        console.log("FillState")
-        this.scene.makeTilesFall()
-        this.scene.replenishField()
-        // .then(() => {
-        //     this.scene.stateMachine.transition('play')
-        // })
-        
-        
+    async enter(): Promise<void> {
+        console.log("FillState");
+
+        await Promise.all([
+            this.scene.makeTilesFall(),
+            this.scene.replenishField()
+        ]);
     }
+    
     exit(): void {
         
     }

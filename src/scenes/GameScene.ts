@@ -15,7 +15,7 @@ import SwapState from '../states/SwapState';
 
 class GameScene extends Phaser.Scene {
     // Variables
-    private canPick: boolean
+    public canPick: boolean
     private dragging: boolean
     public firstSelectedTile: Tile | undefined
     public secondSelectedTile: Tile | undefined
@@ -68,7 +68,7 @@ class GameScene extends Phaser.Scene {
             destroy: new DestroyState(this),
         })
         this.input.on("gameobjectdown", this.tileSelect, this);
-        this.input.on("gameobjectdown", ()=>{this.stateMachine.transition('play')}, this);
+        // this.input.on("gameobjectdown", ()=>{this.stateMachine.transition('play')}, this);
         this.input.on("gameobjectmove", this.startSwipe, this);
         this.input.on("pointerup", this.stopSwipe, this);
         // this.events.on('milestoneReached', this.handleMilestoneReached, this);
@@ -137,7 +137,7 @@ class GameScene extends Phaser.Scene {
                             
                         // Destroy the previous tile if it exists and matches
                         if (this.tileGrid[y][x]) {
-                            this.tileGrid[y][x]!.destroyTile();
+                            this.tileGrid[y][x]!.destroy();
                         }
                     }
     
@@ -286,7 +286,6 @@ class GameScene extends Phaser.Scene {
         const tile1Pos = this.getTilePos(this.tileGrid, tile1)
         const tile2Pos = this.getTilePos(this.tileGrid, tile2)
 
-        // Swap them in our grid with the tiles
         this.tileGrid[tile1Pos.y][tile1Pos.x] = tile2;
         this.tileGrid[tile2Pos.y][tile2Pos.x] = tile1;
 
@@ -310,36 +309,19 @@ class GameScene extends Phaser.Scene {
             onComplete: () => {
                 this.swappingTiles--;
                 if(this.swappingTiles == 0){
-                    // if(this.firstSelectedTile instanceof RocketTile || 
-                    //     this.secondSelectedTile instanceof RocketTile)
-                    // {
-                    //     if(this.firstSelectedTile instanceof RocketTile){
-                    //         (this.firstSelectedTile as RocketTile).destroyTile();
-                    //         this.firstSelectedTile = undefined
-
-                    //     }
-                    //     if(this.secondSelectedTile instanceof RocketTile){
-                    //         (this.secondSelectedTile as RocketTile).destroyTile();
-                    //         this.secondSelectedTile = undefined
-                    //     }
-
-                    // }
-                    // else{
-                        if(!this.matchInBoard() && swapBack){
-                            // this.stateMachine.transition('swap', tile1, tile2, false)
-                            this.swapTiles(tile1, tile2, false);
+                    if(!this.matchInBoard() && swapBack){
+                        this.swapTiles(tile1, tile2, false);
+                    }
+                    else{
+                        if(this.matchInBoard()){
+                            this.handleMatches();
                         }
                         else{
-                            if(this.matchInBoard()){
-                                this.handleMatches();
-                            }
-                            else{
-                                this.canPick = true;
-                                this.firstSelectedTile = undefined;
-                                this.secondSelectedTile = undefined;
-                            }
+                            this.canPick = true;
+                            this.firstSelectedTile = undefined;
+                            this.secondSelectedTile = undefined;
                         }
-                    // }
+                    }
                 }
             }
         });
@@ -370,6 +352,7 @@ class GameScene extends Phaser.Scene {
         if(this.firstSelectedTile instanceof RocketTile || 
             this.secondSelectedTile instanceof RocketTile)
         {
+            console.log("destroyttttttttt")
             if(this.firstSelectedTile instanceof RocketTile)
             {
                 const pos = this.getTilePos(this.tileGrid, this.firstSelectedTile)
@@ -382,11 +365,9 @@ class GameScene extends Phaser.Scene {
             }
         }
         else{
-                
             this.markMatches('HORIZONTAL');
             this.markMatches('VERTICAL');
         }
-        // this.destroyTiles();
         this.stateMachine.transition('destroy');
     }
     public markMatches(direction: 'HORIZONTAL' | 'VERTICAL') {
@@ -399,44 +380,53 @@ class GameScene extends Phaser.Scene {
 
         if(direction === 'HORIZONTAL'){
             for(let y = 0; y < CONST.gridHeight; y++){
-                let colorStreak = 1;
-                let currentColor = '';
+                let typeStreak = 1;
+                let currentType = '';
                 let startStreak = 0;
-                let colorToWatch = 'blueItem';
+                let typeToWatch = 'blueItem';
                 for(let x = 0; x < CONST.gridWidth; x ++){
-                    colorToWatch = this.tileGrid[y][x]!.texture.key
-                    if(colorToWatch == currentColor){
-                        colorStreak ++;
+                    if(this.tileGrid[y][x] instanceof RocketTile
+                        || this.tileGrid[y][x] instanceof BallTile
+                    ) continue
+
+                    typeToWatch = this.tileGrid[y][x]!.texture.key
+                    if(typeToWatch == currentType){
+                        typeStreak ++;
                     }
-                    if(colorToWatch != currentColor || x == CONST.gridWidth - 1){
-                        if(colorStreak >= 3){
-                            this.handleMatchStreak(startStreak, x, y, colorStreak, direction);
+                    if(typeToWatch != currentType || x == CONST.gridWidth - 1){
+                        if(typeStreak >= 3){
+                            this.handleMatchStreak(startStreak, x, y, typeStreak, direction);
                         }
                         startStreak = x;
-                        colorStreak = 1;
-                        currentColor = colorToWatch;
+                        typeStreak = 1;
+                        currentType = typeToWatch;
                     }
+                
                 }
             }
         }
         else{
             for(let y = 0; y < CONST.gridWidth; y++){
-                let colorStreak = 1;
-                let currentColor = '';
+                let typeStreak = 1;
+                let currentType = '';
                 let startStreak = 0;
-                let colorToWatch = 'blueItem';
+                let typeToWatch = 'blueItem';
                 for(let x = 0; x < CONST.gridHeight; x ++){
-                    colorToWatch = this.tileGrid[x][y]!.texture.key
-                    if(colorToWatch == currentColor){
-                        colorStreak ++;
+                    if(this.tileGrid[y][x] instanceof RocketTile
+                        || this.tileGrid[y][x] instanceof BallTile
+                    ) continue
+
+                    typeToWatch = this.tileGrid[x][y]!.texture.key
+                    if(typeToWatch == currentType){
+                        typeStreak ++;
                     }
-                    if(colorToWatch != currentColor || x == CONST.gridHeight - 1){
-                        if(colorStreak >= 3){
-                            this.handleMatchStreak(startStreak, x, y, colorStreak, direction);
+                    if(typeToWatch != currentType || x == CONST.gridHeight - 1){
+                        if(typeStreak >= 3){
+                            this.handleMatchStreak(startStreak, x, y, typeStreak, direction);
                         }
                         startStreak = x;
-                        colorStreak = 1;
-                        currentColor = colorToWatch;
+                        typeStreak = 1;
+                        currentType = typeToWatch;
                     }
                 }
             }
@@ -444,7 +434,7 @@ class GameScene extends Phaser.Scene {
 
 
     }
-    
+
     public specialTileAppearancePosition(start: number, end: number, fixed: number, streak: number, direction: 'HORIZONTAL' | 'VERTICAL'): { row: number, col: number } {
         if (this.firstSelectedTile === undefined) {
             if (direction === 'HORIZONTAL') {
@@ -456,7 +446,7 @@ class GameScene extends Phaser.Scene {
             const firstTilePos = this.getTilePos(this.tileGrid, this.firstSelectedTile);
             const secondTilePos = this.getTilePos(this.tileGrid, this.secondSelectedTile);
 
-            // Kiểm tra nếu firstSelectedTile nằm trong chuỗi streak
+            // Kiểm tra nếu selectedTile nằm trong chuỗi streak
             if (direction === 'HORIZONTAL') {
                 if (firstTilePos.y === fixed) {
                     return { row: fixed, col: firstTilePos.x };
@@ -483,12 +473,72 @@ class GameScene extends Phaser.Scene {
     }
     
     public handleMatchStreak(start: number, end: number, fixed: number, streak: number, direction: 'HORIZONTAL' | 'VERTICAL') {
+        // check special match (T, L), if yes return, if not check normal match
+        // if(direction == 'HORIZONTAL'){
+        //     for (let i = 0; i < streak; i++) {
+        //         let verticalMatch = this.countVerticalMatches(fixed,start + i)
+        //         if(verticalMatch >= 2){
+        //             let horizontalMatch = streak - 1
+
+        //             const row = fixed
+        //             const col = start + i
+        //             const posX = col * CONST.tileWidth + CONST.GRID_OFFSET_X;
+        //             const posY = row * CONST.tileHeight + CONST.GRID_OFFSET_Y;
+        //             const tweens = []
+        //             const typeToWatch = this.tileGrid[row][col]!.texture.key;
+
+        //             this.tileGrid[row][col]?.destroy()
+        //             this.tileGrid[row][col] = undefined;
+                    
+        //             for (let offset = 0; offset < streak; offset++){
+        //                 if (start + offset !== col) {
+        //                     tweens.push({
+        //                         targets: this.tileGrid[row][col],
+        //                         x: posX,
+        //                         duration: CONST.swapSpeed,
+        //                         onComplete: () => {
+        //                             horizontalMatch--;
+        //                             this.tileGrid[row][start + offset]?.destroy();
+        //                             this.tileGrid[row][start + offset] = undefined;
+        //                             if(horizontalMatch === 0 ){
+        //                                 this.stateMachine.transition('fill')
+        //                             }
+        //                         }
+        //                     });
+        //                 }
+        //             }
+        //             for (let offset = -2; offset <= 2; offset++){
+        //                 if (offset !== 0 && this.matchType(row + offset, col, typeToWatch)) {
+        //                     tweens.push({
+        //                         targets: this.tileGrid[row][col],
+        //                         y: posY,
+        //                         duration: CONST.swapSpeed,
+        //                         onComplete: () => {
+        //                             verticalMatch--;
+        //                             this.tileGrid[row + offset][col]?.destroy();
+        //                             this.tileGrid[row + offset][col] = undefined;
+        //                             if(horizontalMatch === 0 && verticalMatch === 0){
+        //                                 this.stateMachine.transition('fill')
+        //                             }
+        //                         }
+        //                     });
+        //                 }
+        //             }
+        //             this.tweens.chain({tweens: tweens, loop: false});
+        //             this.tileGrid[row][col] = new BallTile(this, posX, posY)
+
+        //             return
+        //         }
+
+        //     }
+        // }
         if (streak >= 4) {
             const {row, col} = this.specialTileAppearancePosition(start, end, fixed, streak, direction)
             const posX = col * CONST.tileWidth + CONST.GRID_OFFSET_X;
             const posY = row * CONST.tileHeight + CONST.GRID_OFFSET_Y;
 
-            //trường hợp này destroy khác mấy cái bình thường nên tạm để destroy riêng
+            this.tileGrid[row][col]?.destroy()
+            this.tileGrid[row][col] = undefined;
             // Di chuyển các tile còn lại về phía special tile
             let destroy = streak - 1
             for (let i = 0; i < streak; i++) {
@@ -500,12 +550,10 @@ class GameScene extends Phaser.Scene {
                             duration: CONST.swapSpeed,
                             onComplete: () => {
                                 destroy--;
-                                this.tileGrid[fixed][start + i]?.destroyTile();
+                                this.tileGrid[fixed][start + i]?.destroy();
                                 this.tileGrid[fixed][start + i] = undefined;
                                 if(destroy === 0){
                                     this.stateMachine.transition('fill')
-                                    // this.makeTilesFall();
-                                    // this.replenishField();
                                 }
                             }
                         });
@@ -518,23 +566,19 @@ class GameScene extends Phaser.Scene {
                             duration: CONST.swapSpeed,
                             onComplete: () => {
                                 destroy--;
-                                this.tileGrid[start + i][fixed]?.destroyTile();
+                                this.tileGrid[start + i][fixed]?.destroy();
                                 this.tileGrid[start + i][fixed] = undefined;
                                 if(destroy === 0){
                                     this.stateMachine.transition('fill')
-                                    // this.makeTilesFall();
-                                    // this.replenishField();
                                 }
                             }
                         });
                     }
                 }
             }
-            this.tileGrid[row][col]?.destroyTile()
-            this.tileGrid[row][col] = undefined;
             if(streak === 4) this.tileGrid[row][col] = new RocketTile(this, posX, posY, direction);
             else this.tileGrid[row][col] = new BallTile(this, posX, posY);
-        } 
+        }          
         else{
             for (let i = 0; i < streak; i++) {
                 if (direction === 'HORIZONTAL') {
@@ -544,30 +588,54 @@ class GameScene extends Phaser.Scene {
                 }
             }
         }
-    }
 
+    }
+    public countVerticalMatches(row: number, col: number): number {
+        let tile = this.tileGrid[row][col];
+        if (!tile) return 0;
+
+        let matchCount = 0;
+        let typeToWatch = tile.texture.key;
+        const offsets = [1, 2, -1, -2];
+        for (const offset of offsets) {
+            if (this.matchType(row + offset, col, typeToWatch)) {
+                matchCount++;
+            }
+        }
+
+        return matchCount
+    }
+    
+    public matchType(x: number, y: number, typeToWatch: string): boolean {
+        if (x < 0 || x >= CONST.gridWidth || y < 0 || y >= CONST.gridHeight) return false;
+        if(this.tileGrid[y][x] && this.tileGrid[y][x]!.texture.key === typeToWatch)
+            return true
+        else return false
+    }
+    
     public destroyTiles(): void {
         this.firstSelectedTile = undefined;
         this.secondSelectedTile = undefined;
-        let isDestroyRocket = false;
+        let isDestroySpecial = false;
         for(let y = 0; y < CONST.gridHeight; y ++){
             for(let x = 0; x < CONST.gridWidth; x ++){
                 if(this.removeMap[y][x] > 0){
                     const destroyTile = this.tileGrid[y][x]
-                    if(destroyTile instanceof RocketTile) isDestroyRocket=true
+                    if(destroyTile instanceof RocketTile) isDestroySpecial=true
                     this.scoreManager.addScore(100);
                     destroyTile?.destroyTile();
                     this.tileGrid[y][x] = undefined
                 }
             }
         }
-        if(!isDestroyRocket) this.stateMachine.transition('fill')
+        if(!isDestroySpecial) this.stateMachine.transition('fill')
 
     }
-
-    public makeTilesFall(){
+    
+    public async makeTilesFall(): Promise<void>{
         console.log("makeTilesFall")
         //xét từ dưới lên trên từ trái qua phải
+        
         for(let y = CONST.gridHeight - 2; y >= 0; y--){
             for(let x = 0; x < CONST.gridWidth; x++){
                 if(this.tileGrid[y][x]){
@@ -604,55 +672,52 @@ class GameScene extends Phaser.Scene {
         }
         return result;
     }
-    public replenishField(): Promise<void> {
-        return new Promise((resolve) => {
-            console.log("replenishField")
-            let replenished = 0;
-            for(let x = 0; x < CONST.gridWidth; x ++){
-                let emptySpots = this.holesInCol(x);
-                if(emptySpots > 0){
-                    for(let y = 0; y < emptySpots; y++){
-                        replenished++;
-                        let randomTileType = CONST.candyTypes[Phaser.Math.RND.between(0, CONST.candyTypes.length - 1)];                    
-                        this.tileGrid[y][x] = new Tile(this, x, y, randomTileType);
-                        this.tileGrid[y][x]!.x = CONST.tileWidth * x + CONST.GRID_OFFSET_X;
-                        this.tileGrid[y][x]!.y = - (emptySpots - y) * CONST.tileHeight + CONST.GRID_OFFSET_Y;
-                        this.tileGrid[y][x]!.visible = false; // Hide the tile initially
+    public async replenishField(): Promise<void> {
+        console.log("replenishField")
+        this.firstSelectedTile = undefined;
+        this.secondSelectedTile = undefined;
+        let replenished = 0;
+        for(let x = 0; x < CONST.gridWidth; x ++){
+            let emptySpots = this.holesInCol(x);
+            if(emptySpots > 0){
+                for(let y = 0; y < emptySpots; y++){
+                    replenished++;
+                    let randomTileType = CONST.candyTypes[Phaser.Math.RND.between(0, CONST.candyTypes.length - 1)];                    
+                    this.tileGrid[y][x] = new Tile(this, x, y, randomTileType);
+                    this.tileGrid[y][x]!.x = CONST.tileWidth * x + CONST.GRID_OFFSET_X;
+                    this.tileGrid[y][x]!.y = - (emptySpots - y) * CONST.tileHeight + CONST.GRID_OFFSET_Y;
+                    this.tileGrid[y][x]!.visible = false; // Hide the tile initially
 
-                        this.tweens.add({
-                            targets: this.tileGrid[y][x],
-                            y: CONST.tileHeight * y + CONST.GRID_OFFSET_Y,
-                            duration: CONST.fallSpeed * emptySpots ,
-                            callbackScope: this,
-                            onUpdate: () => {
-                                // Make tile visible once it starts entering the board
-                                if (this.tileGrid[y][x]!.y >= CONST.GRID_OFFSET_Y) {
-                                    this.tileGrid[y][x]!.visible = true;
+                    this.tweens.add({
+                        targets: this.tileGrid[y][x],
+                        y: CONST.tileHeight * y + CONST.GRID_OFFSET_Y,
+                        duration: CONST.fallSpeed * emptySpots,
+                        callbackScope: this,
+                        onUpdate: () => {
+                            // Make tile visible once it starts entering the board
+                            if (this.tileGrid[y][x]!.y >= CONST.GRID_OFFSET_Y) {
+                                this.tileGrid[y][x]!.visible = true;
+                            }
+                        },
+                        onComplete: () => {
+                            replenished--;
+                            if(replenished == 0){
+                                if(this.matchInBoard()){
+                                    this.time.addEvent({
+                                        delay: 300,
+                                        callback: this.handleMatches,
+                                        callbackScope: this
+                                    });
                                 }
-                            },
-                            onComplete: () => {
-                                replenished--;
-                                if(replenished == 0){
-                                    if(this.matchInBoard()){
-                                        this.time.addEvent({
-                                            delay: 250,
-                                            callback: this.handleMatches,
-                                            callbackScope: this
-                                        });
-                                    }
-                                    else{
-                                        this.canPick = true;
-                                        this.firstSelectedTile = undefined;
-                                        this.secondSelectedTile = undefined;
-                                    }
+                                else{
+                                    this.canPick = true;
                                 }
                             }
-                        });
-                    }
+                        }
+                    });
                 }
             }
-            resolve();
-        });
+        }
     }
 }
 
