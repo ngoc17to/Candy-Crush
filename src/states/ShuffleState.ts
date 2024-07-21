@@ -1,89 +1,153 @@
 import State from "../types/State";
 import GameScene from "../scenes/GameScene";
 import Tile from "../game-objects/Tile";
-
+import { CONST } from "../const";
+import { GameObjects } from "phaser";
+import Confetti from "../effect/Confetti";
 class ShuffleState extends State {
     private scene: GameScene;
-    private tiles: Phaser.GameObjects.Group;
+    private tiles: (Tile | undefined)[]
+    private confetti: Phaser.GameObjects.Particles.ParticleEmitter
 
     constructor(scene: GameScene) {
         super();
         this.scene = scene;
-        this.tiles = scene.tiles
+        this.tiles = scene.tiles    
+        this.confetti = this.scene.add.particles(0, 0, 'confetti', {
+            frequency: 1000 / 60,
+            lifespan: 10000,
+            speedY: { min: -5000, max: -3000 },
+            speedX: { min: -500, max: 500 },
+            angle: { min: -85, max: -95 },
+            gravityY: 2000,
+            frame: [0, 2, 4, 6, 8, 10, 12, 14, 16],
+            quantity: 100,
+            x: { min: 0, max: 800 },
+            emitting: false,
+            scaleX: {
+                onEmit: () => {
+                    return 1
+                },
+                onUpdate: (particle) => {
+                    return Math.cos((2 * Math.PI) * 8 * particle.lifeT)
+                },
+            },
+            rotate: {
+                onEmit: () => {
+                    return 0
+                },
+                onUpdate: (particle) => {
+                    return 4 * 360 * Math.sign(particle.velocityX) * particle.lifeT
+                },
+            },
+            accelerationX: {
+                onEmit: () => {
+                    return 0
+                },
+                onUpdate: (particle) => {
+                    return -particle.velocityX * Phaser.Math.Between(0, 1)
+                },
+            },
+            accelerationY: {
+                onEmit: () => {
+                    return 0
+                },
+                onUpdate: (particle) => {
+                    return -particle.velocityY * Phaser.Math.Between(3, 4)
+                },
+            },
+        })
 
     }
 
     enter(): void {
-        console.log("ShuffleState");
-        // this.shuffleTiles().then(() => {
-        //     this.scene.stateMachine.transition('play');
-        // });
-        // this.placeTilesInCircle();
+        console.log("Shuffle State");
+        this.scene.levelComplete.setVisible(true);
+        this.scene.levelComplete.setAlpha(0);
+        this.scene.tweens.add({
+            targets: this.scene.levelComplete,
+            alpha: 1,
+            scale: 1,
+            duration: 300,
+            ease: 'Quint.easeIn'
+        });
+        this.scene.time.delayedCall(1500, () => {
+             this.scene.levelComplete.setAlpha(1);
+             this.scene.levelComplete.setScale(1);
+            this.scene.tweens.add({
+                targets:  this.scene.levelComplete,
+                alpha: 0,
+                scale: 0.5,
+                duration: 300,
+                ease: 'Quint.easeIn',
+                onComplete: () => {
+                     this.scene.levelComplete.setVisible(false);
+                     this.scene.levelComplete.setActive(false);
+                }
+            });
+        });
+        this.confetti.explode(200, this.scene.cameras.main.width / 2, this.scene.cameras.main.height)
+        this.scene.shuffleTiles()
+        // Disable user interaction
+        this.scene.canPick = false;
 
-
-    }
-    private placeTilesInCircle(): void {
-        const circle = new Phaser.Geom.Circle(this.scene.cameras.main.width / 2, this.scene.cameras.main.height / 2, 100);
+        const tiles = this.scene.tiles as GameObjects.GameObject[]
+        const centerX = this.scene.cameras.main.width / 2 - 20;
+        const centerY = this.scene.cameras.main.height / 2 + 50;
+        const radius = Math.min(this.scene.cameras.main.width, this.scene.cameras.main.height) / 5;
+        // Create a circle
+        const circle = new Phaser.Geom.Circle(centerX, centerY, radius);
 
         // Place tiles on the circle
-        Phaser.Actions.PlaceOnCircle(this.tiles.getChildren(), circle);
+        Phaser.Actions.PlaceOnCircle(tiles, circle);
 
         // Create a tween to rotate the tiles around the circle
         this.scene.tweens.add({
             targets: circle,
-            radius: 100,
+            radius: radius,
             ease: 'Quintic.easeInOut',
-            duration: 1500,
+            duration: 2000,
             yoyo: false,
-            repeat: 0,
+            repeat: 1, 
             onUpdate: () => {
-                Phaser.Actions.RotateAroundDistance(this.tiles.getChildren(), circle, 0.02, circle.radius);
+                Phaser.Actions.RotateAroundDistance(tiles, circle, 0.02, circle.radius);
             },
             onComplete: () => {
-                this.moveTilesToOriginalPositions();
+                this.moveTilesToNewPositions(this.scene);
             }
         });
     }
 
-    private moveTilesToOriginalPositions(): void {
-        this.tiles.getChildren().forEach((tile, index) => {
-            const tileSprite = tile as Tile | undefined
+    moveTilesToNewPositions(scene: GameScene) {
+        const tiles = this.scene.tiles as GameObjects.GameObject[]
+        tiles.forEach((tileObj: GameObjects.GameObject, index: number) => {
+            const tile = tileObj as Tile;
+            const y = Math.floor(index / CONST.gridWidth);
+            const x = index % CONST.gridWidth;
+            const newX = x * CONST.tileWidth + CONST.GRID_OFFSET_X;
+            const newY = y * CONST.tileHeight + CONST.GRID_OFFSET_Y;
 
-            this.scene.tweens.add({
-                targets: tileSprite,
-                x: tileSprite?.x,
-                y: tileSprite?.y,
-                duration: 500,
-                delay: index * 50, // Optional: delay each tile's movement slightly for a staggered effect
+            scene.tweens.add({
+                targets: tile,
+                x: newX,
+                y: newY,
+                duration: 1000,
                 ease: 'Power2',
                 onComplete: () => {
-                    if (tileSprite === this.tiles.getChildren()[this.tiles.getChildren().length - 1]) {
-                        // Last tile completed moving, transition to next state
-                        this.scene.stateMachine.transition('play');
+                    if (index === tiles.length - 1) {
+                        // All tiles are in place, transition back to play state
+                        this.scene.stateMachine.transition('match');
+                        scene.canPick = true;
                     }
                 }
             });
         });
     }
 
-    // private shuffleTiles(): Promise<void> {
-    //     return new Promise((resolve) => {
-    //         // Thực hiện trộn lại các tile ở đây
-    //         this.scene.shuffleTiles(); // Giả sử bạn có hàm shuffleTiles trong GameScene
-
-    //         // Sử dụng tween hoặc delayed call để hoàn tất việc trộn
-    //         this.scene.time.delayedCall(2000, () => {
-    //             resolve();
-    //         });
-    //     });
-    // }
-
     exit(): void {
-        // Thực hiện bất kỳ logic nào khi thoát khỏi state Shuffle
     }
 
     execute(time: number, delta: number): void {
-        // Thực hiện logic cập nhật nếu cần
     }
 }
 

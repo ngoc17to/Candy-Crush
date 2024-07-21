@@ -5,40 +5,43 @@ import State from "../types/State";
 
 class FillState extends State{
     private scene: GameScene
-    private elapsedTime = 0
+    private isFilled: boolean
 
     constructor(scene: GameScene) {
         super()
         this.scene = scene
-        this.elapsedTime = 0
+        this.isFilled = false
     }
 
-    async enter(): Promise<void> {
+    enter(): void {
         console.log("FillState");
+        this.scene.makeTilesFall()
+        this.scene.replenishField()
 
-        await Promise.all([
-            this.scene.makeTilesFall(),
-            this.scene.replenishField()
-        ]);
     }
     
+    
     exit(): void {
-        
+        this.isFilled = false
+
     }
 
     execute(time: number, delta: number): void {
-        // this.elapsedTime += delta
-        // // if(this.elapsedTime > 3000)
-        // for(let y = 0; y < CONST.gridHeight; y++){
-        //     for(let x = 0; x < CONST.gridWidth; x ++){
-        //         if(this.scene.tileGrid[y][x] === undefined)
-        //         {
-        //             this.scene.makeTilesFall()
-        //             this.scene.replenishField()
-        //         }
+        const tileGrid = this.scene.tileGrid
+        // const tileGridState: (string|number|undefined)[][] = []
+        // const tileGridPos: ({x: number|undefined, y: number|undefined})[][] = []
+        
+        // for(let i = 0; i < CONST.gridHeight; i++){
+        //     tileGridState[i] = []
+        //     for(let j = 0; j < CONST.gridWidth; j++){
+        //         tileGridState[i].push(tileGrid[i][j]?.state)
         //     }
-        // }           
-        //  this.scene.stateMachine.transition('play');
+        // }
+        // console.log(tileGridState)
+
+        if (tileGrid.every((row) => row.every((tile) => tile && tile.state == 'replenished'))) {
+                this.stateMachine.transition('match');
+        }
 
     }
 

@@ -19,36 +19,36 @@ class Tile extends Phaser.GameObjects.Sprite {
         this.scene.add.existing(this)
     }
     public destroyTile(): void {
-        console.log("destroyTile")
         this.destroyTween()
         this.destroy()
+        this.currentScene.scoreManager.addScore(100);
     }
     public destroyTween(): void {
         const gameScene = this.scene as GameScene;
-        // console.log(gameScene)
-        const {x,y} = gameScene.getTilePos(gameScene.tileGrid, this)
-        // console.log(x,y)
+        if(this!==undefined){
+            const {x,y} = gameScene.getTilePos(gameScene.tileGrid, this)
 
-        gameScene.add.particles(0, 0, 'particle', {
-            x: gameScene.tileGrid[y][x]!.x + CONST.tileWidth / 2,
-            y: gameScene.tileGrid[y][x]!.y + CONST.tileHeight / 2,
-            angle: { min: 0, max: 360},
-            lifespan: 250,
-            speed: 100,
-            quantity: 10,
-            gravityY: 150,
-            scale: { 
-                start: 0.15, 
-                end: 0.02, 
-                ease: 'Sine.easeInOut', 
-            },
-            duration: 10,
-        })
-        this.explodeEmitter.createExplosionParticles(
-            gameScene.tileGrid[y][x]!.x + CONST.tileWidth / 2,
-            gameScene.tileGrid[y][x]!.y + CONST.tileHeight / 2,
-            gameScene.tileGrid[y][x]!.texture.key
-        )
+            gameScene.add.particles(0, 0, 'particle', {
+                x: gameScene.tileGrid[y][x]!.x + CONST.tileWidth / 2,
+                y: gameScene.tileGrid[y][x]!.y + CONST.tileHeight / 2,
+                angle: { min: 0, max: 360},
+                lifespan: 250,
+                speed: 100,
+                quantity: 10,
+                gravityY: 150,
+                scale: { 
+                    start: 0.15, 
+                    end: 0.02, 
+                    ease: 'Sine.easeInOut', 
+                },
+                duration: 10,
+            })
+            this.explodeEmitter.createExplosionParticles(
+                gameScene.tileGrid[y][x]!.x + CONST.tileWidth / 2,
+                gameScene.tileGrid[y][x]!.y + CONST.tileHeight / 2,
+                gameScene.tileGrid[y][x]!.texture.key
+            )
+        }
     }
 }
 

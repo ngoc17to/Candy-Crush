@@ -9,7 +9,8 @@ export let CONST = {
     swapSpeed: 200,
     destroySpeed: 100,
     fallSpeed: 200,
-    TRANSITION_DELAY: 5000,
+    TRANSITION_DELAY: 8000,
+    HINT_APPEAR: 5000,
     candyTypes: [
         'blueItem',
         'greenItem',
@@ -18,7 +19,11 @@ export let CONST = {
         'yellowItem',
     ],
     GRID_OFFSET_X: 0,
-    GRID_OFFSET_Y: 0 
+    GRID_OFFSET_Y: 0,
+    backgroundWidth: 0,
+    backgroundHeight: 0,
+    backgroundX: 0,
+    backgroundY: 0,
 };
 
 export const explodeFrameMap: { [key: string]: string } = {
