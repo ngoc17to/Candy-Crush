@@ -7,7 +7,7 @@ class LevelComplete extends Phaser.GameObjects.Container {
     constructor(scene: GameScene, x: number, y: number) {
         super(scene, x, y);
 
-        this.background = scene.add.sprite(0, 0, 'menu').setScale(0.25)
+        this.background = scene.add.sprite(0, 0, 'menu').setScale(0.25, 0.2)
         this.levelCompleteText = scene.add.text(0, 0, 'Level Complete!!!',
         {font: '36px Arial', color:'#e67300'})
         
@@ -18,7 +18,7 @@ class LevelComplete extends Phaser.GameObjects.Container {
         this.setVisible(false);
 
         this.setSize(this.background.displayWidth, this.background.displayHeight)
-        this.setDepth(3)
+        this.setDepth(2)
         scene.add.existing(this);
     }
 }
