@@ -25,6 +25,11 @@
         "type": "image",
         "key": "yellowItem",
         "url": "./assets/images/Match_Items/YellowMatchItem.png"
+      },
+      {
+        "type": "image",
+        "key": "pinkItem",
+        "url": "./assets/images/Match_Items/PinkMatchItem.png"
       }
     ]
   }

@@ -25,6 +25,11 @@
         "type": "image",
         "key": "yellowExplode",
         "url": "./assets/images/Shattered Block Parts/block_yellow_particle.png"
+      },
+      {
+        "type": "image",
+        "key": "pinkExplode",
+        "url": "./assets/images/Shattered Block Parts/block_pink_particle.png"
       }
     ]
   }
