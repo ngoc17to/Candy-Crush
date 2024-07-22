@@ -21,7 +21,7 @@ class Tile extends Phaser.GameObjects.Sprite {
     public destroyTile(): void {
         this.destroyTween()
         this.destroy()
-        this.currentScene.scoreManager.addScore(100);
+        this.currentScene.scoreManager.addScore(50);
     }
     public destroyTween(): void {
         const gameScene = this.scene as GameScene;

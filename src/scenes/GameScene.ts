@@ -469,7 +469,7 @@ class GameScene extends Phaser.Scene {
         const posX = col * CONST.tileWidth + CONST.GRID_OFFSET_X;
         const posY = row * CONST.tileHeight + CONST.GRID_OFFSET_Y;
         let tilesToDestroy = tilesToRemove.length;
-        this.scoreManager.addScore(tilesToDestroy*100)
+        this.scoreManager.addScore(tilesToDestroy*50)
         tilesToRemove.forEach(({row: r, col: c}) => {
             if (this.tileGrid[r] && this.tileGrid[r][c]) {
                 this.tweens.add({
@@ -598,7 +598,7 @@ class GameScene extends Phaser.Scene {
     
             // Destroy all tiles in the streak
             let tilesToDestroy = streak;
-            this.scoreManager.addScore(tilesToDestroy*100)
+            this.scoreManager.addScore(tilesToDestroy*50)
 
             for (let i = 0; i < streak; i++) {
                 const tileRow = direction === 'HORIZONTAL' ? fixed : start + i;

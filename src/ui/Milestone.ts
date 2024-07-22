@@ -35,7 +35,6 @@ class Milestone extends Phaser.GameObjects.Container {
     }
 
     update(): void {
-
         const milestone = this.scoreManager.getMilestone()
         const score = this.scoreManager.getScore()
         this.scene.tweens.add({
