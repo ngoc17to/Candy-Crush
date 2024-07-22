@@ -19,7 +19,7 @@ class PlayState extends State{
         this.elapsedTime = 0
         this.scene.canPick = true
         if(this.scene.scoreManager.getScore() >= this.scene.scoreManager.getMilestone()){
-            this.scene.scoreManager.setMilestone(this.scene.scoreManager.getMilestone() + 5000)
+            this.scene.scoreManager.setMilestone(this.scene.scoreManager.getMilestone() + 1000)
             this.stateMachine.transition('shuffle')
         }
         const hint = this.scene.getHint()

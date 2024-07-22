@@ -32,6 +32,7 @@ export const explodeFrameMap: { [key: string]: string } = {
     'greenItem': 'greenExplode',
     'redItem': 'redExplode',
     'purpleItem': 'purpleExplode',
+    'yellowItem': 'yellowExplode',
     'pinkItem': 'pinkExplode',
 };
 

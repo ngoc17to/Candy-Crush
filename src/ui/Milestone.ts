@@ -40,7 +40,7 @@ class Milestone extends Phaser.GameObjects.Container {
         const score = this.scoreManager.getScore()
         this.scene.tweens.add({
             targets: this.cropRect,
-            width: this.progressFill.width * (score % milestone / milestone),
+            width: this.progressFill.width * (score % 1000 / 1000),
             duration: 100,
             yoyo: true,
             repeat: 0,

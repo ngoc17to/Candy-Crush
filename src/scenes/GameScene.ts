@@ -223,6 +223,7 @@ class GameScene extends Phaser.Scene {
     }
 
     public startSwipe(pointer: any, gameobject: any, event: any){
+        if(this.secondSelectedTile !== undefined) return
         if(this.dragging && this.firstSelectedTile != null){
             let deltaX = pointer.downX - pointer.x;
             let deltaY = pointer.downY - pointer.y;
@@ -244,7 +245,6 @@ class GameScene extends Phaser.Scene {
                 const firstSelectedTilePos = this.getTilePos(this.tileGrid, this.firstSelectedTile)
                 this.secondSelectedTile = this.tileAt(firstSelectedTilePos.y + deltaRow, firstSelectedTilePos.x + deltaCol);
                 if(this.secondSelectedTile){
-                    // this.stateMachine.transition('swap', this.firstSelectedTile, this.secondSelectedTile, true)
                     this.swapTiles(this.firstSelectedTile, this.secondSelectedTile, true);
                     this.dragging = false;
                 }
@@ -377,6 +377,7 @@ class GameScene extends Phaser.Scene {
         for(let y = 0; y < CONST.gridHeight; y++){
             for(let x = 0; x < CONST.gridWidth; x++){
                 const { isMatch, tilesToRemove } = this.checkTLMatch(y, x);
+                console.log({ isMatch, tilesToRemove })
                 if (isMatch) {
                     this.createBallTile(y, x, tilesToRemove);
                     return;
