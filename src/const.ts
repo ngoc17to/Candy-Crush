@@ -17,6 +17,7 @@ export let CONST = {
         'redItem',
         'purpleItem',
         'yellowItem',
+        'pinkItem',
     ],
     GRID_OFFSET_X: 0,
     GRID_OFFSET_Y: 0,
@@ -31,7 +32,7 @@ export const explodeFrameMap: { [key: string]: string } = {
     'greenItem': 'greenExplode',
     'redItem': 'redExplode',
     'purpleItem': 'purpleExplode',
-    'yellowItem': 'yellowExplode',
+    'pinkItem': 'pinkExplode',
 };
 
 // Tính offset 

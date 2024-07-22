@@ -15,7 +15,7 @@ class ExplodeEmitter {
             speed: 150,
             gravityY: 800,
             scale: {
-                start: 0.05,
+                start: 0.2,
                 end: 0,
                 ease: 'Sine.easeInOut',
             },
