@@ -111,11 +111,39 @@ class ShuffleState extends State {
         const radius = Math.min(width, height) / 5;
         
         const circle = new Phaser.Geom.Circle(centerX, centerY, radius);
-        Phaser.Actions.PlaceOnCircle(tiles, circle);
-
+        
+        // Khai báo kiểu cho mảng positions
+        const positions: { x: number; y: number }[] = [];
+        for (let i = 0; i < tiles.length; i++) {
+            const angle = (i / tiles.length) * Math.PI * 2;
+            positions.push({
+                x: centerX + Math.cos(angle) * radius,
+                y: centerY + Math.sin(angle) * radius
+            });
+        }
+    
+        // Phần còn lại của code giữ nguyên
+        tiles.forEach((tileObj: GameObjects.GameObject, index: number) => {
+            const tile = tileObj as Tile;
+            this.scene.tweens.add({
+                targets: tile,
+                x: positions[index].x,
+                y: positions[index].y,
+                duration: 1000,
+                ease: 'Power2',
+                onComplete: () => {
+                    if (index === tiles.length - 1) {
+                        this.rotateCircle(circle, tiles);
+                    }
+                }
+            });
+        });
+    }
+    
+    private rotateCircle(circle: Phaser.Geom.Circle, tiles: GameObjects.GameObject[]): void {
         this.scene.tweens.add({
             targets: circle,
-            radius: radius,
+            radius: circle.radius,
             ease: 'Quintic.easeInOut',
             duration: 2000,
             yoyo: false,

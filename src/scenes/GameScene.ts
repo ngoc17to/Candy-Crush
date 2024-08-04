@@ -67,7 +67,7 @@ class GameScene extends Phaser.Scene {
         this.dragging = false;
         this.firstSelectedTile = undefined;
         this.secondSelectedTile = undefined;
-        this.scoreManager = new ScoreManager(this, 1000); // Set initial milestone
+        this.scoreManager = new ScoreManager(this, 2000); // Set initial milestone
         this.milestone = new Milestone(this);
         this.tiles = []
         this.levelComplete = new LevelComplete(this, screenWidth/2, screenHeight/2)
